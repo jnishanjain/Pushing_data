@@ -2,28 +2,26 @@ name: Daily Commit
 
 on:
   schedule:
-    - cron: '30 5 * * *'  # Runs daily at 5:30 UTC
-  workflow_dispatch:
-
-permissions:
-  contents: write
+    - cron: '0 8 * * *'  # Runs every day at 08:00 UTC
+  workflow_dispatch:     # Optional: allows manual triggering
 
 jobs:
-  daily-commit:
+  commit:
     runs-on: ubuntu-latest
-
     steps:
-    - uses: actions/checkout@v3
+      - name: Checkout the repository
+        uses: actions/checkout@v4
 
-    - name: Setup Git
-      run: |
-        git config --global user.name "GitHub Action Bot"
-        git config --global user.email "22f1001592@ds.study.iitm.ac.in"
+      - name: Make a change with email 22f1001592@ds.study.iitm.ac.in
+        run: |
+          echo "Daily update at $(date)" >> daily-log.txt
 
-    - name: Create Empty Commit for 22f1001592@ds.study.iitm.ac.in
-      run: |
-        git commit --allow-empty -m "Daily commit: $(date)"
-
-    - name: Push Commit
-      run: |
-        git push https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }} HEAD:$(git rev-parse --abbrev-ref HEAD)
+      - name: Commit and push changes
+        run: |
+          git config user.name "GitHub Action"
+          git config user.email "22f1001592@ds.study.iitm.ac.in"
+          git add .
+          git commit -m "Automated daily commit: $(date)" || echo "No changes to commit"
+          git push
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
